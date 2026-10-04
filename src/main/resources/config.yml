@@ -1,0 +1,243 @@
+# Updraft Shop
+# Shop categories, items and prices.
+# Colours use & codes (and #rrggbb hex), e.g. &a for green.
+#
+# Menus are styled after Hypixel: window titles are joined with a grey "»", category
+# names are all caps, and prices read like "&a&lBUY &7- &a&l$500". Change any string
+# here to reword the shop; nothing is hardcoded in the plugin.
+
+# Prefix put in front of every chat message the plugin sends.
+prefix: "&8&lUpdraft Shop &7» &r"
+
+gui:
+  # Used to build window titles: "&8Updraft Shop" and "&8Updraft Shop §7» §8ORES"
+  shop-name: "Updraft Shop"
+  # size must be 27 or 54
+  main-size: 54
+  # Play a soft click when navigating menus and completing trades
+  sounds: true
+  # Item shown in the bottom row of every category and trade view
+  back-item: "&e&lBack"
+  back-icon: ARROW
+  close-item: "&c&lClose"
+  close-icon: BARRIER
+
+economy:
+  # Used only when Vault is not installed. Balances are stored in economy.yml.
+  starting-balance: 0.0
+  currency-symbol: "$"
+
+categories:
+  blocks:
+    display-name: "&a&lBLOCKS"
+    icon: GRASS_BLOCK
+    description:
+      - "&7Building materials for your base"
+    items:
+      stone:
+        material: STONE
+        name: "&fStone"
+        buy: 10.0
+        sell: 5.0
+      cobblestone:
+        material: COBBLESTONE
+        name: "&fCobblestone"
+        buy: 8.0
+        sell: 4.0
+      dirt:
+        material: DIRT
+        name: "&fDirt"
+        buy: 5.0
+        sell: 2.0
+      sand:
+        material: SAND
+        name: "&fSand"
+        buy: 15.0
+        sell: 7.0
+      gravel:
+        material: GRAVEL
+        name: "&fGravel"
+        buy: 12.0
+        sell: 6.0
+      oak_planks:
+        material: OAK_PLANKS
+        name: "&fOak Planks"
+        buy: 6.0
+        sell: 3.0
+
+  combat:
+    display-name: "&c&lCOMBAT"
+    icon: DIAMOND_SWORD
+    description:
+      - "&7Weapons, armour and gear"
+    items:
+      iron_sword:
+        material: IRON_SWORD
+        name: "&fIron Sword"
+        buy: 150.0
+        sell: 75.0
+      diamond_sword:
+        material: DIAMOND_SWORD
+        name: "&fDiamond Sword"
+        buy: 1000.0
+        sell: 500.0
+      shield:
+        material: SHIELD
+        name: "&fShield"
+        buy: 250.0
+        sell: 125.0
+      bow:
+        material: BOW
+        name: "&fBow"
+        buy: 300.0
+        sell: 150.0
+      arrow:
+        material: ARROW
+        name: "&fArrow"
+        buy: 5.0
+        sell: 2.0
+      golden_apple:
+        material: GOLDEN_APPLE
+        name: "&6Golden Apple"
+        buy: 200.0
+        sell: 100.0
+
+  farming:
+    display-name: "&6&lFARMING"
+    icon: WHEAT
+    description:
+      - "&7Farming items and food"
+    items:
+      wheat:
+        material: WHEAT
+        name: "&fWheat"
+        buy: 15.0
+        sell: 7.0
+      carrot:
+        material: CARROT
+        name: "&fCarrot"
+        buy: 12.0
+        sell: 6.0
+      potato:
+        material: POTATO
+        name: "&fPotato"
+        buy: 12.0
+        sell: 6.0
+      bread:
+        material: BREAD
+        name: "&fBread"
+        buy: 25.0
+        sell: 12.0
+
+  ores:
+    display-name: "&b&lORES"
+    icon: DIAMOND_ORE
+    description:
+      - "&7Valuable ores and materials"
+    items:
+      coal:
+        material: COAL
+        name: "&fCoal"
+        buy: 30.0
+        sell: 15.0
+      iron:
+        material: IRON_INGOT
+        name: "&fIron Ingot"
+        buy: 75.0
+        sell: 37.0
+      gold:
+        material: GOLD_INGOT
+        name: "&6Gold Ingot"
+        buy: 125.0
+        sell: 62.0
+      diamond:
+        material: DIAMOND
+        name: "&bDiamond"
+        buy: 500.0
+        sell: 250.0
+      emerald:
+        material: EMERALD
+        name: "&aEmerald"
+        buy: 750.0
+        sell: 375.0
+
+  nether:
+    display-name: "&4&lNETHER"
+    icon: NETHERRACK
+    description:
+      - "&7Nether items and resources"
+    items:
+      netherrack:
+        material: NETHERRACK
+        name: "&fNetherrack"
+        buy: 15.0
+        sell: 7.0
+      soul_sand:
+        material: SOUL_SAND
+        name: "&fSoul Sand"
+        buy: 30.0
+        sell: 15.0
+      quartz:
+        material: QUARTZ
+        name: "&fNether Quartz"
+        buy: 100.0
+        sell: 50.0
+      glowstone:
+        material: GLOWSTONE
+        name: "&eGlowstone"
+        buy: 75.0
+        sell: 37.0
+
+  custom:
+    display-name: "&d&lCUSTOM"
+    icon: BEACON
+    description:
+      - "&7Rare items and oddities"
+    items:
+      ender_pearl:
+        material: ENDER_PEARL
+        name: "&fEnder Pearl"
+        buy: 500.0
+        sell: 250.0
+      blaze_rod:
+        material: BLAZE_ROD
+        name: "&6Blaze Rod"
+        buy: 350.0
+        sell: 175.0
+      obsidian:
+        material: OBSIDIAN
+        name: "&5Obsidian"
+        buy: 250.0
+        sell: 125.0
+      experience_bottle:
+        material: EXPERIENCE_BOTTLE
+        name: "&aExperience Bottle"
+        buy: 100.0
+        sell: 50.0
+      netherite_ingot:
+        material: NETHERITE_INGOT
+        name: "&4Netherite Ingot"
+        buy: 4000.0
+        sell: 2000.0
+      dragon_breath:
+        material: DRAGON_BREATH
+        name: "&dDragon's Breath"
+        buy: 3000.0
+        sell: 1500.0
+      # Set buy to 0 to make an item sell-only, sell to 0 to make it buy-only
+      heart_of_the_sea:
+        material: HEART_OF_THE_SEA
+        name: "&bHeart of the Sea"
+        buy: 8000.0
+        sell: 0.0
+
+messages:
+  bought: "&7Bought &f{item} &7x&f{amount} &7for &a{price}"
+  sold: "&7Sold &f{item} &7x&f{amount} &7for &a{price}"
+  sold-partial: "&7Only had &f{available} &7of &f{item} &7to sell, sold that for &a{price}"
+  not-enough-money: "&cYou need &f{price} &cto do that."
+  inventory-full: "&cYou do not have room for that."
+  nothing-to-sell: "&cYou do not have any &f{item} &cto sell."
+  not-for-sale: "&cThat cannot be bought or sold here."
+  economy-error: "&cThe economy provider rejected that transaction."
+  unknown-item: "&cThat item is not in the shop."

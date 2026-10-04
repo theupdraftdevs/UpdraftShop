@@ -1,0 +1,8 @@
+[versions]
+# Paper only publishes R0.1-SNAPSHOT builds of its API, so this cannot be a fixed
+# release. The Minecraft version (1.21.11) is what is actually pinned here; bump it
+# with Dependabot and refresh the checksums, see README.
+paperApi = "1.21.11-R0.1-SNAPSHOT"
+
+[libraries]
+paper-api = { module = "io.papermc.paper:paper-api", version.ref = "paperApi" }
