@@ -1,18 +1,69 @@
 version: 2
 
+# Notes:
+#  - Paper only publishes paper-api as an R0.1-SNAPSHOT, and Dependabot cannot
+#    resolve snapshots. The paper-api version in gradle/libs.versions.toml is bumped
+#    by hand, see README "Updating dependencies".
+#  - Semver buckets are split into groups on purpose: the auto merge workflow refuses
+#    to touch anything landing in the major groups, so a major bump always gets a
+#    human to look at it.
 updates:
-  - package-ecosystem: "gradle"
+  - package-ecosystem: gradle
     directory: "/"
     schedule:
-      interval: "weekly"
-    open-pull-requests-limit: 10
-    labels:
-      - "dependencies"
-
-  - package-ecosystem: "github-actions"
-    directory: "/"
-    schedule:
-      interval: "weekly"
+      interval: weekly
+      day: monday
+      time: "08:00"
+      timezone: Etc/UTC
     open-pull-requests-limit: 5
     labels:
+      - "dependencies"
+      - "java"
+    commit-message:
+      prefix: "build"
+      prefix-development: "build"
+      include: scope
+    pull-request-branch-name:
+      separator: "-"
+    groups:
+      gradle-patch-and-minor:
+        patterns:
+          - "*"
+        update-types:
+          - "version-update:semver-patch"
+          - "version-update:semver-minor"
+          - "version-update:semver-compatibility"
+      gradle-major:
+        patterns:
+          - "*"
+        update-types:
+          - "version-update:semver-major"
+
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: weekly
+      day: monday
+      time: "08:00"
+      timezone: Etc/UTC
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
       - "github-actions"
+    commit-message:
+      prefix: "ci"
+      prefix-development: "ci"
+      include: scope
+    groups:
+      actions-patch-and-minor:
+        patterns:
+          - "*"
+        update-types:
+          - "version-update:semver-patch"
+          - "version-update:semver-minor"
+          - "version-update:semver-compatibility"
+      actions-major:
+        patterns:
+          - "*"
+        update-types:
+          - "version-update:semver-major"

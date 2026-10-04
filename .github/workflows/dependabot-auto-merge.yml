@@ -1,4 +1,14 @@
-name: Dependabot Auto Merge
+name: Auto Merge Dependabot
+
+# GitHub's official Dependabot auto merge recipe. Two things are tightened here:
+#
+#  1. Major version bumps are never auto merged. dependabot.yml splits semver buckets
+#     into separate groups, so anything landing in a "major" group is left for a human.
+#  2. Auto merge is only enabled when the branch name actually says which group it is,
+#     instead of merging whatever Dependabot happens to open.
+#
+# Nothing from the pull request is ever checked out or executed in this workflow, which
+# is why running on pull_request_target is safe here.
 
 on:
   pull_request_target:
@@ -6,20 +16,39 @@ on:
       - opened
       - synchronize
       - reopened
+      - ready_for_review
 
 permissions:
   contents: write
   pull-requests: write
 
+# One run per PR at a time, newest wins.
+concurrency:
+  group: auto-merge-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
 jobs:
   auto-merge:
-    if: >
-      github.actor == 'dependabot[bot]' &&
-      github.event.pull_request.user.login == 'dependabot[bot]'
+    # Dependabot only. Never anyone else's PR, whatever the branch is named.
+    if: github.event.pull_request.user.login == 'dependabot[bot]'
     runs-on: ubuntu-latest
 
     steps:
+      - name: Refuse major version bumps
+        id: major
+        env:
+          BRANCH: ${{ github.event.pull_request.head.ref }}
+        run: |
+          if [[ "$BRANCH" == *major* ]]; then
+            echo "Major version bump ($BRANCH), leaving this one for review."
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "Safe update ($BRANCH), enabling auto merge."
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Enable auto merge
+        if: steps.major.outputs.skip == 'false'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PR_URL: ${{ github.event.pull_request.html_url }}

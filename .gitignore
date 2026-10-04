@@ -1,5 +1,15 @@
-.idea
-.gradle
-build
-gradle
-*.bat
+# Editors
+.idea/
+*.iml
+.vscode/
+
+# Gradle
+# Only the cache and build output. The wrapper, version catalog and dependency
+# verification metadata under gradle/ MUST stay tracked, so do not add a bare
+# `gradle` entry here.
+.gradle/
+build/
+
+# OS noise
+.DS_Store
+Thumbs.db
