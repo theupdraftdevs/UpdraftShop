@@ -238,3 +238,13 @@ messages:
   not-for-sale: "&cThat cannot be bought or sold here."
   economy-error: "&cThe economy provider rejected that transaction."
   unknown-item: "&cThat item is not in the shop."
+  players-only: "&cOnly a player can do that."
+  empty-hand: "&cHold the item you want to sell first."
+  not-in-shop: "&cThe shop does not buy &f{item}&c."
+  bad-amount: "&c&f{amount}&c is not a valid amount."
+
+  # /shophelp
+  help-header: "&8&m                                        "
+  help-shop: "&e/shop &7- &fopens the shop menu"
+  help-sell: "&e/sell [amount] &7- &fsells the item in your hand"
+  help-help: "&e/shophelp &7- &fshows this list"

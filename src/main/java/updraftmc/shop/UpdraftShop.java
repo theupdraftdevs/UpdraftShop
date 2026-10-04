@@ -2,6 +2,10 @@ package updraftmc.shop;
 
 import org.bukkit.plugin.java.JavaPlugin;
 import updraftmc.shop.config.Messages;
+import updraftmc.shop.commands.HelpCommand;
+import updraftmc.shop.commands.MainCommand;
+import updraftmc.shop.commands.SellCommand;
+import updraftmc.shop.commands.ShopCommand;
 import updraftmc.shop.config.ShopRegistry;
 import updraftmc.shop.economy.Economy;
 import updraftmc.shop.economy.InternalEconomy;
@@ -29,9 +33,11 @@ public final class UpdraftShop extends JavaPlugin {
 
         getServer().getPluginManager().registerEvents(new GUIListener(service), this);
 
-        // TODO: commands. The /shop executor calls ShopService.openShop(player); the
-        // /sell executor reads a held item and calls ShopService.sell(player, ...).
-        // Left unwritten on purpose, so nothing references the command stubs yet.
+        // Registered after construction so no command escapes `this` mid-init.
+        new MainCommand(this, service).register();
+        new ShopCommand(this, service).register();
+        new SellCommand(this, service).register();
+        new HelpCommand(this, service).register();
 
         getLogger().info("UpdraftShop has been enabled.");
     }

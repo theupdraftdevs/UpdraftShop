@@ -1,20 +1,31 @@
 package updraftmc.shop.commands;
 
-import org.bukkit.command.Command;
-import org.bukkit.command.CommandExecutor;
-import org.bukkit.command.CommandSender;
-import org.jetbrains.annotations.NotNull;
+import org.bukkit.entity.Player;
+import updraftmc.shop.ShopService;
 import updraftmc.shop.UpdraftShop;
 
-public class ShopCommand extends CommandFm implements CommandExecutor {
-    private UpdraftShop server;
-    public ShopCommand(UpdraftShop server) {
-        this.server = server;
-        super(server);
+/**
+ * {@code /shop} opens the category menu.
+ */
+public final class ShopCommand extends CommandFm {
+
+    private final ShopService service;
+
+    public ShopCommand(UpdraftShop plugin, ShopService service) {
+        super(plugin, "shop");
+        this.service = service;
     }
 
     @Override
-    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String @NotNull [] args) {
+    protected boolean execute(CommandContext context) {
+        Player player = context.player();
+
+        if (player == null) {
+            service.messages().sendRaw(context.sender(), "players-only");
+            return true;
+        }
+
+        service.openShop(player);
         return true;
     }
 }

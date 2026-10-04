@@ -2,6 +2,7 @@ package updraftmc.shop.config;
 
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
+import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
@@ -57,6 +58,21 @@ public final class Messages {
      */
     public void sendRaw(Player player, String key, String... replacements) {
         player.sendMessage(text(get(key), replacements));
+    }
+
+    /**
+     * Sends a message to anything that can receive one, so commands can report back to
+     * the console as easily as to a player.
+     */
+    public void send(CommandSender sender, String key, String... replacements) {
+        sender.sendMessage(text(prefix + get(key), replacements));
+    }
+
+    /**
+     * Sends a message with no prefix to a player.
+     */
+    public void sendRaw(CommandSender sender, String key, String... replacements) {
+        sender.sendMessage(text(get(key), replacements));
     }
 
     public Component component(String key, String... replacements) {

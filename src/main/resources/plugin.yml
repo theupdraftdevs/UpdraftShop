@@ -1,5 +1,5 @@
 name: UpdraftShop
-version: 1.0.0
+version: ${version}
 main: updraftmc.shop.UpdraftShop
 api-version: '1.21'
 author: french and astro
@@ -7,6 +7,16 @@ softdepend:
   - Vault
 
 commands:
+  updraftshop:
+    description: Opens the shop menu.
+    usage: /updraftshop
+    aliases: [ ushop ]
   shop:
-    description: opens shopgui
+    description: Opens the shop menu.
     usage: /shop
+  sell:
+    description: Sells the item in your hand. Optionally takes an amount, or "all".
+    usage: /sell [amount|all]
+  shophelp:
+    description: Lists the shop commands.
+    usage: /shophelp

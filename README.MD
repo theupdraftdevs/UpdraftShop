@@ -20,13 +20,27 @@
   swapped.
 - Coloured names, messages and menu text are all configurable.
 - Optional soft click sound on menu navigation and trades. (`gui.sounds`)
+- `/sell` for a quick hand-to-money trade without opening a menu, with tab completion.
+- Selling only ever takes plain, undamaged, unenchanted stacks, so a named or enchanted
+  item is never quietly eaten by the shop.
+
+## Commands
+
+| command      | what it does                                          |
+|--------------|-------------------------------------------------------|
+| `/shop`      | Opens the shop menu.                                  |
+| `/updraftshop` | Same, for servers that already use `/shop` for something else. Aliased `/ushop`. |
+| `/sell [amount\|all]` | Sells the item in your main hand without opening a menu. Defaults to the whole stack; `all` sells the largest batch the item allows in one trade. |
+| `/shophelp`  | Lists the commands.                                   |
+
+Tab completion is wired up on all of them, and `/sell` completes item ids and `all`.
 
 ## Setup
 
 1. Drop the jar in `plugins/`.
 2. Start the server once to generate `plugins/UpdraftShop/config.yml`.
 3. Edit the categories, items and prices to taste.
-4. `/shop` opens the menu once the commands are implemented.
+4. `/shop` opens the menu.
 
 ## Look and feel
 
@@ -65,6 +79,11 @@ Produces `build/libs/UpdraftShop-<version>.jar`. The build needs any JDK 21 or n
 it compiles with `--release 21`, so it does not insist on one exact JDK being
 installed. Jars are reproducible: the same source always produces the same bytes.
 
+`./gradlew build` also runs the test suite, which includes a check that the built jar's
+bytecode is major version 65. That is the version Paper 1.21.11 can load; a jar
+compiled at a higher language level would pass every other check and then fail on the
+server with `UnsupportedClassVersionError`.
+
 ## Updating dependencies
 
 Dependency versions live in `gradle/libs.versions.toml`, and every resolved artifact
@@ -78,7 +97,7 @@ snapshot's checksums automatically, so bumping `paper-api` is a two step job:
 2. Regenerate the checksums:
 
    ```bash
-   ./gradlew --write-verification-metadata sha256 --refresh-dependencies --rerun-tasks compileJava
+   ./gradlew --write-verification-metadata sha256 --refresh-dependencies --rerun-tasks compileJava compileTestJava
    ```
 
    then paste the `paper-api` entry back into `gradle/verification-metadata.xml` by

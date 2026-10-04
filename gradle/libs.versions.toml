@@ -1,8 +1,13 @@
 [versions]
 # Paper only publishes R0.1-SNAPSHOT builds of its API, so this cannot be a fixed
 # release. The Minecraft version (1.21.11) is what is actually pinned here; bump it
-# with Dependabot and refresh the checksums, see README.
+# with a human, see README "Updating dependencies".
 paperApi = "1.21.11-R0.1-SNAPSHOT"
+junit = "5.11.4"
 
 [libraries]
 paper-api = { module = "io.papermc.paper:paper-api", version.ref = "paperApi" }
+
+junit-bom = { module = "org.junit:junit-bom", version.ref = "junit" }
+junit-jupiter = { module = "org.junit.jupiter:junit-jupiter" }
+junit-platform-launcher = { module = "org.junit.platform:junit-platform-launcher" }

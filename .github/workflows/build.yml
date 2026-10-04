@@ -27,9 +27,8 @@ jobs:
         uses: actions/setup-java@v6
         with:
           distribution: temurin
-          # commands/ uses flexible constructor bodies, a Java 25 preview feature, so
-          # this has to stay in step with the toolchain in build.gradle.kts.
-          java-version: "25"
+          # build.gradle.kts compiles with release 21, so any JDK 21 or newer works.
+          java-version: "21"
           cache: gradle
 
       - name: Setup Gradle

@@ -1,20 +1,29 @@
 package updraftmc.shop.commands;
 
-import org.bukkit.command.Command;
-import org.bukkit.command.CommandExecutor;
-import org.bukkit.command.CommandSender;
-import org.jetbrains.annotations.NotNull;
+import updraftmc.shop.ShopService;
 import updraftmc.shop.UpdraftShop;
+import updraftmc.shop.config.Messages;
 
-public class HelpCommand extends CommandFm implements CommandExecutor {
-    private UpdraftShop server;
-    public HelpCommand(UpdraftShop server) {
-        this.server = server;
-        super(server);
+/**
+ * {@code /shophelp} lists the commands and what they do.
+ */
+public final class HelpCommand extends CommandFm {
+
+    private final ShopService service;
+
+    public HelpCommand(UpdraftShop plugin, ShopService service) {
+        super(plugin, "shophelp");
+        this.service = service;
     }
 
     @Override
-    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String @NotNull [] args) {
+    protected boolean execute(CommandContext context) {
+        Messages messages = service.messages();
+
+        messages.sendRaw(context.sender(), "help-header");
+        messages.sendRaw(context.sender(), "help-shop");
+        messages.sendRaw(context.sender(), "help-sell");
+        messages.sendRaw(context.sender(), "help-help");
 
         return true;
     }

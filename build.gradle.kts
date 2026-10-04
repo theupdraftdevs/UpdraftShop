@@ -16,26 +16,34 @@ repositories {
 dependencies {
     // The server provides Paper at runtime, so this must never end up in the jar.
     compileOnly(libs.paper.api)
+
+    // Tests run off-server, so they need an implementation on the classpath.
+    testImplementation(libs.paper.api)
+    testImplementation(platform(libs.junit.bom))
+    testImplementation(libs.junit.jupiter)
+    testRuntimeOnly(libs.junit.platform.launcher)
 }
 
 java {
-    // Java 25, not 21: the classes under commands/ use flexible constructor bodies,
-    // which is a Java 25 preview feature. CI is pinned to 25 to match.
-    toolchain.languageVersion.set(JavaLanguageVersion.of(25))
     withSourcesJar()
 }
 
 tasks.withType<JavaCompile>().configureEach {
     options.encoding = "UTF-8"
 
-    // Flexible constructor bodies in commands/CommandFm subclasses are still preview,
-    // so the compiler and the test JVM both need the flag.
-    options.compilerArgs.addAll(listOf("--enable-preview", "-Xlint:all,-serial,-processing"))
+    // NOT a toolchain. Paper 1.21.11 runs on Java 21 and rejects class files newer
+    // than major 65, so `release` pins the bytecode to exactly what the server can
+    // load while letting any JDK 21 or newer run the build.
+    options.release = 21
+    options.compilerArgs.add("-Xlint:all,-serial,-processing")
 }
 
-tasks.withType<Test>().configureEach {
+tasks.test {
     useJUnitPlatform()
-    jvmArgs("--enable-preview")
+
+    // The bytecode compatibility check reads the jar, so it has to run after it is
+    // built rather than alongside compilation.
+    dependsOn(tasks.jar)
 }
 
 tasks.withType<AbstractArchiveTask>().configureEach {
