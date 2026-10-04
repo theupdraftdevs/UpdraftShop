@@ -1,10 +1,7 @@
 # Updraft Shop
 # Shop categories, items and prices.
 # Colours use & codes (and #rrggbb hex), e.g. &a for green.
-#
-# Menus are styled after Hypixel: window titles are joined with a grey "»", category
-# names are all caps, and prices read like "&a&lBUY &7- &a&l$500". Change any string
-# here to reword the shop; nothing is hardcoded in the plugin.
+
 
 # Prefix put in front of every chat message the plugin sends.
 prefix: "&8&lUpdraft Shop &7» &r"
