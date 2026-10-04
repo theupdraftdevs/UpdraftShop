@@ -1,3 +1,5 @@
 package updraftmc.shop.commands;
 
-public class ShopCommand {}
+public class ShopCommand {
+
+}
