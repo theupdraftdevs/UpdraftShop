@@ -159,12 +159,6 @@ public class ShopGUI {
     }
 
     private static void openCategory(Player player, String category) {
-        player.sendMessage(
-                ChatColor.DARK_AQUA + ""
-                        + ChatColor.GRAY + "» "
-                        + ChatColor.YELLOW + "ᴏᴘᴇɴɪɴɢ"
-                        + ChatColor.WHITE + category
-                        + ChatColor.YELLOW + "..."
-        );
+        new CategoryGUI(player, category).open();
     }
 }

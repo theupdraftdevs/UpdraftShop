@@ -7,8 +7,14 @@ import updraftmc.shop.gui.ShopGUI;
 
 public class GUIListener implements Listener {
 
-    @EventHandler
-    public void onInventoryClick(InventoryClickEvent event) {
-        ShopGUI.handleClick(event);
-    }
+     @EventHandler
+     public void onInventoryClick(InventoryClickEvent event) {
+     if (ShopGUI.isShopInventory(event)) {
+         ShopGUI.handleClick(event);
+         return;
+     }
+     if (CategoryGUI.isCategoryInventory(event)) {
+         CategoryGUI.handleClick(event);
+     }
+     }
 }
