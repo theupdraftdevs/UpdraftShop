@@ -1,16 +1,24 @@
 package updraftmc.shop;
 
 import org.bukkit.plugin.java.JavaPlugin;
-// TODO: Complete the plugin (i'll do it later nike if your reading this can you do the shop commands for me? thanks)
-public final class UpdraftShop extends JavaPlugin {
+import updraftmc.shop.commands.HelpCommand;
+import updraftmc.shop.commands.MainCommand;
+import updraftmc.shop.commands.SellCommand;
+import updraftmc.shop.commands.ShopCommand;
+
+public class UpdraftShop extends JavaPlugin {
+
+
 
     @Override
     public void onEnable() {
-
+        registerCommands();
     }
 
-    @Override
-    public void onDisable() {
-
+    private void registerCommands() {
+        new SellCommand(this);
+        new HelpCommand(this);
+        new MainCommand(this);
+        new ShopCommand(this);
     }
 }
