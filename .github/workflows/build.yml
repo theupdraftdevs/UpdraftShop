@@ -5,9 +5,15 @@ on:
     branches:
       - "**"
   pull_request:
+  workflow_dispatch:
 
 permissions:
   contents: read
+
+# A new push to the same branch makes the previous run irrelevant.
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   build:
@@ -21,11 +27,17 @@ jobs:
         uses: actions/setup-java@v6
         with:
           distribution: temurin
-          java-version: "21"
+          # commands/ uses flexible constructor bodies, a Java 25 preview feature, so
+          # this has to stay in step with the toolchain in build.gradle.kts.
+          java-version: "25"
+          cache: gradle
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
 
+      # Resolves dependencies and verifies every checksum against
+      # gradle/verification-metadata.xml. A tampered or unexpectedly republished
+      # artifact fails the build here.
       - name: Build
         run: ./gradlew build
 
