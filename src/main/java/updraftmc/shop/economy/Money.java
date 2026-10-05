@@ -23,6 +23,24 @@ public final class Money {
     private Money() {
     }
 
+    /**
+     * Kills a fractional cent so repeated buys and sells cannot leave dust behind.
+     *
+     * <p>Lives here rather than in an economy implementation because rounding is a
+     * property of money, not of the plugin holding it: a price quoted in a menu, a
+     * charge taken through Vault and a tax deducted from a sale all have to agree, and
+     * Vault balances are not ours to round.
+     */
+    public static double round(double amount) {
+        if (Double.isNaN(amount) || Double.isInfinite(amount)) {
+            return 0;
+        }
+
+        return BigDecimal.valueOf(amount)
+                .setScale(2, RoundingMode.HALF_UP)
+                .doubleValue();
+    }
+
     public static String format(double amount, String symbol) {
         if (Double.isNaN(amount) || Double.isInfinite(amount)) {
             return symbol + "0";

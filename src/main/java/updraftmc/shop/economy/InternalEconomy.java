@@ -100,9 +100,7 @@ public final class InternalEconomy implements Economy {
      * Kills a fractional cent so repeated buys and sells cannot leave dust behind.
      */
     public static double round(double amount) {
-        return BigDecimal.valueOf(amount)
-                .setScale(2, RoundingMode.HALF_UP)
-                .doubleValue();
+        return updraftmc.shop.economy.Money.round(amount);
     }
 
     private void read() {

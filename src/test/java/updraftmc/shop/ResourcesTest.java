@@ -3,7 +3,6 @@ package updraftmc.shop;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -22,13 +21,28 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  */
 class ResourcesTest {
 
-    private static final List<String> COMMANDS = List.of("updraftshop", "shop", "sell", "shophelp");
+    private static final List<String> COMMANDS = List.of(
+            "updraftshop", "shop", "sell", "balance", "pay", "shopadmin",
+            "shopstats", "shophelp");
+
+    private static final List<String> PERMISSIONS = List.of(
+            "updraftshop.use", "updraftshop.sell", "updraftshop.stats",
+            "updraftshop.pay", "updraftshop.admin");
 
     private static final List<String> MESSAGES = List.of(
             "bought", "sold", "sold-partial", "not-enough-money", "inventory-full",
             "nothing-to-sell", "not-for-sale", "economy-error", "unknown-item",
             "players-only", "empty-hand", "not-in-shop", "bad-amount",
-            "help-header", "help-shop", "help-sell", "help-help");
+            "no-permission", "no-search-results",
+            "nothing-to-sell-all", "sold-all",
+            "balance", "paid", "received", "pay-self", "pay-usage",
+            "no-stats", "stats-header", "stats-trades", "stats-bought", "stats-sold",
+            "stats-net",
+            "unknown-player", "player-offline", "reload-success", "reload-failed",
+            "admin-help", "admin-gave", "admin-took", "admin-set",
+            "admin-received", "admin-charged", "admin-balance-changed", "admin-opened",
+            "help-header", "help-shop", "help-balance", "help-pay", "help-sell", "help-stats",
+            "help-help");
 
     @Test
     @DisplayName("plugin.yml declares every command the code registers")
@@ -52,6 +66,22 @@ class ResourcesTest {
                     "command '" + name + "' has no description");
             assertNotNull(yml.getString("commands." + name + ".usage"),
                     "command '" + name + "' has no usage line");
+        }
+    }
+
+    @Test
+    @DisplayName("plugin.yml declares every permission the code checks")
+    void declaresEveryPermission() throws Exception {
+        var yml = read("plugin.yml");
+        var declared = yml.getConfigurationSection("permissions");
+
+        assertNotNull(declared, "plugin.yml declares no permissions");
+
+        for (String node : PERMISSIONS) {
+            assertNotNull(declared.getConfigurationSection(node),
+                    "permission '" + node + "' is checked in code but missing from plugin.yml");
+            assertNotNull(yml.getString("permissions." + node + ".description"),
+                    "permission '" + node + "' has no description");
         }
     }
 
@@ -95,7 +125,11 @@ class ResourcesTest {
         assertTrue(config.contains("gui.sounds"));
         assertTrue(config.contains("gui.back-item"));
         assertTrue(config.contains("gui.close-icon"));
+        assertTrue(config.contains("gui.previous-icon"));
+        assertTrue(config.contains("gui.next-icon"));
         assertTrue(config.contains("economy.currency-symbol"));
+        assertTrue(config.contains("tax.buy"));
+        assertTrue(config.contains("tax.sell"));
 
         int size = config.getInt("gui.main-size");
         assertTrue(size == 27 || size == 54, "gui.main-size must be 27 or 54, was " + size);
@@ -129,12 +163,28 @@ class ResourcesTest {
         }
     }
 
+    /**
+     * Parses a shipped resource.
+     *
+     * <p>Uses {@code loadFromString} rather than {@code loadConfiguration} on purpose:
+     * the latter swallows a syntax error and reports it through {@code Bukkit.getLogger},
+     * which is null off a server, so a malformed YAML file shows up as a bare
+     * NullPointerException with no mention of which line was wrong. Here a broken file
+     * fails loudly with the parser's own message.
+     */
     private static org.bukkit.configuration.file.YamlConfiguration read(String name) throws Exception {
         Path file = Path.of("src/main/resources", name);
 
-        try (InputStream in = Files.newInputStream(file)) {
-            return org.bukkit.configuration.file.YamlConfiguration.loadConfiguration(
-                    new java.io.InputStreamReader(in, StandardCharsets.UTF_8));
+        String text = Files.readString(file, StandardCharsets.UTF_8);
+
+        var yml = new org.bukkit.configuration.file.YamlConfiguration();
+
+        try {
+            yml.loadFromString(text);
+        } catch (org.bukkit.configuration.InvalidConfigurationException exception) {
+            throw new AssertionError(name + " is not valid YAML: " + exception.getMessage(), exception);
         }
+
+        return yml;
     }
 }

@@ -7,12 +7,28 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
-     * Slot maths shared by every shop view.
+ * Slot maths shared by every shop view.
  *
  * <p>Views are drawn as: a full glass border around the outside, clickable content
  * in the rows between the top and bottom border, and controls on the bottom row.
+ *
+ * <p>The bottom row offsets are fixed here so every view puts its controls in the same
+ * place. A player learns one layout instead of relearning it per screen.
  */
 final class Layout {
+
+    /**
+     * Bottom row slots, counted from the left edge of that row.
+     *
+     * <p>The corners are used because the middle is already busy, and because it keeps
+     * the eye-catching controls off the centre where a misclick is most likely.
+     */
+    static final int HEAD = 0;
+    static final int PREVIOUS = 1;
+    static final int BACK = 3;
+    static final int CLOSE = 5;
+    static final int NEXT = 7;
+    static final int PAGE_INFO = 8;
 
     private Layout() {
     }
@@ -40,6 +56,8 @@ final class Layout {
     /**
      * Slots available for content, in reading order. Row zero and the bottom row are
      * left out because they hold the border and the controls.
+     *
+     * @return the same list every time, so callers can index it without copying
      */
     static List<Integer> contentSlots(int size) {
         List<Integer> slots = new ArrayList<>();
@@ -53,6 +71,26 @@ final class Layout {
 
         return slots;
     }
+
+    /**
+     * How many icons fit in a menu of {@code size}, matching the layout drawn above.
+     */
+    static int capacity(int size) {
+        return Math.max(0, (size / 9 - 2) * 7);
+    }
+
+    /**
+     * The smallest menu size that fits {@code items} content icons.
+     *
+     * <p>Used by views that build their size from their content, such as search
+     * results, so a three hit search does not open an empty 54 slot menu.
+     */
+    static int validSize(int items) {
+        return capacity(SMALL_SIZE) >= items ? SMALL_SIZE : FULL_SIZE;
+    }
+
+    private static final int SMALL_SIZE = 27;
+    private static final int FULL_SIZE = 54;
 
     /**
      * First slot of the bottom row, where controls live.

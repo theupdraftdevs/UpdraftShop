@@ -8,15 +8,48 @@ softdepend:
 
 commands:
   updraftshop:
-    description: Opens the shop menu.
-    usage: /updraftshop
+    description: "Opens the shop menu. From console, prints the loaded version and economy."
+    usage: "/updraftshop"
     aliases: [ ushop ]
   shop:
-    description: Opens the shop menu.
-    usage: /shop
+    description: "Opens the shop menu, or searches for an item."
+    usage: "/shop [query]"
   sell:
-    description: Sells the item in your hand. Optionally takes an amount, or "all".
-    usage: /sell [amount|all]
+    description: "Sells what you are holding, or everything shoppable."
+    usage: "/sell [amount|hand|all]"
+    aliases: [ sellhand, sellall ]
+  balance:
+    description: "Shows your balance."
+    usage: "/balance [player]"
+    aliases: [ bal, money ]
+  pay:
+    description: "Sends money to another player."
+    usage: "/pay <player> <amount>"
+  shopadmin:
+    description: "Staff commands: reload, give, take, set, open."
+    usage: "/shopadmin <reload|give|take|set|open>"
+    aliases: [ updraftshopadmin ]
+  shopstats:
+    description: "Shows your trading statistics."
+    usage: "/shopstats [player]"
+    aliases: [ shopbal ]
   shophelp:
-    description: Lists the shop commands.
-    usage: /shophelp
+    description: "Lists the shop commands."
+    usage: "/shophelp"
+
+permissions:
+  updraftshop.use:
+    description: "Open the shop and buy items."
+    default: true
+  updraftshop.sell:
+    description: "Sell items."
+    default: true
+  updraftshop.stats:
+    description: "View your own trading statistics."
+    default: true
+  updraftshop.pay:
+    description: "Use /pay."
+    default: true
+  updraftshop.admin:
+    description: "Reload the config and change other players' balances."
+    default: op

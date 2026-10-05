@@ -14,6 +14,12 @@
 - Per item buy and sell prices, set in `config.yml` instead of hardcoded.
 - A trade screen with amount buttons (1 / 8 / 16 / 32 / 64 / max) so nothing is
   bought by accident.
+- Paginated menus: a shop with more items than fit gets page arrows instead of items
+  nobody can click.
+- `/shop <query>` searches by name or id, for when nobody remembers which category an
+  item is in.
+- Optional buy and sell tax, applied to the amount actually charged so what a menu
+  quotes is what it takes.
 - Works with any economy plugin through [Vault](https://github.com/milkbowl/Vault), and falls back to a built in
   balance system when Vault is not installed.
 - Shop menus are read-only: nothing can be shift clicked, dragged or number key
@@ -21,6 +27,11 @@
 - Coloured names, messages and menu text are all configurable.
 - Optional soft click sound on menu navigation and trades. (`gui.sounds`)
 - `/sell` for a quick hand-to-money trade without opening a menu, with tab completion.
+- `/sell all` dumps every shoppable item in your inventory in one go.
+- `/balance` and `/pay`, going through whichever economy plugin is actually holding
+  the money.
+- Per player trading statistics, written to `stats.yml` and readable with `/shopstats`.
+- Staff commands for reloading the config and adjusting balances.
 - Selling only ever takes plain, undamaged, unenchanted stacks, so a named or enchanted
   item is never quietly eaten by the shop.
 
@@ -28,12 +39,29 @@
 
 | command      | what it does                                          |
 |--------------|-------------------------------------------------------|
-| `/shop`      | Opens the shop menu.                                  |
-| `/updraftshop` | Same, for servers that already use `/shop` for something else. Aliased `/ushop`. |
-| `/sell [amount\|all]` | Sells the item in your main hand without opening a menu. Defaults to the whole stack; `all` sells the largest batch the item allows in one trade. |
+| `/shop [query]` | Opens the shop menu. With a query, opens search results instead. |
+| `/updraftshop` | Same, for servers that already use `/shop` for something else. Aliased `/ushop`. From the console it prints the version, entry count and economy instead. |
+| `/sell [amount\|all]` | Sells the item in your main hand without opening a menu. Defaults to the whole stack; `all` sells everything shoppable you are carrying. |
+| `/balance [player]` | Shows your balance. Staff can ask about somebody else. Aliased `/bal` and `/money`. |
+| `/pay <player> <amount>` | Sends money to another player. Accepts `1k`, `2.5m` and `1b`. |
+| `/shopstats [player]` | Shows what a player has traded. Aliased `/shopbal`. |
+| `/shopadmin <reload\|give\|take\|set\|open>` | Staff only. Reloads the config, or gives, takes and sets balances. |
 | `/shophelp`  | Lists the commands.                                   |
 
 Tab completion is wired up on all of them, and `/sell` completes item ids and `all`.
+
+## Permissions
+
+| node                  | default | what it allows                              |
+|-----------------------|---------|---------------------------------------------|
+| `updraftshop.use`     | everyone | Open the shop and buy items.               |
+| `updraftshop.sell`    | everyone | Sell items, through the menu or `/sell`.   |
+| `updraftshop.stats`   | everyone | See the balance head and `/shopstats`.     |
+| `updraftshop.pay`     | everyone | Use `/pay`.                                |
+| `updraftshop.admin`   | op      | `/shopadmin`, and reading other players' balances. |
+
+Buy and sell are separate so a server can let people buy without letting them sell,
+which is the usual way to run a one way donation shop.
 
 ## Setup
 
@@ -41,6 +69,9 @@ Tab completion is wired up on all of them, and `/sell` completes item ids and `a
 2. Start the server once to generate `plugins/UpdraftShop/config.yml`.
 3. Edit the categories, items and prices to taste.
 4. `/shop` opens the menu.
+
+`/updraftshop` reloads the config without a restart. Balances and trading statistics
+survive it, since neither is configuration.
 
 ## Look and feel
 
@@ -59,8 +90,8 @@ they go into a title, so a category can be any colour without tinting the menu.
 To restyle the shop, edit these in `config.yml`:
 
 - `prefix` — prepended to every chat message
-- `gui.shop-name`, `gui.sounds`, `gui.back-item`, `gui.close-item` and their `*-icon`
-  companions
+- `gui.shop-name`, `gui.sounds`, `gui.back-item`, `gui.close-item`, `gui.previous-icon`
+  and `gui.next-icon`
 - `categories.<id>.display-name` — the coloured, bold header
 - `categories.<id>.icon` — the material shown in the main menu
 - `categories.<id>.description` — the lines under a category
@@ -68,6 +99,31 @@ To restyle the shop, edit these in `config.yml`:
 - `messages.*` — every chat message
 
 Set an item's `buy: 0.0` to make it sell only, or `sell: 0.0` to make it buy only.
+
+## Tax
+
+```yaml
+tax:
+  buy: 0.05
+  sell: 0.1
+```
+
+`buy` is added to what a purchase costs and `sell` is deducted from what a sale pays,
+both rounded to the cent. Either a fraction (`0.05`) or a percentage (`5`) works, since
+both readings are natural and guessing wrong by a factor of 100 is expensive. Both
+default to zero, and menus quote the amount actually charged rather than the headline
+price, so tax can never make a button lie.
+
+## Files
+
+| file | what it holds |
+|------|---------------|
+| `config.yml` | categories, items, prices, tax, and every message |
+| `economy.yml` | balances, and only used when Vault is not installed |
+| `stats.yml` | per player trade counts and totals |
+
+Stats are saved every five minutes and on shutdown rather than on every trade, so
+browsing the shop does not put a disk write behind every click.
 
 ## Building
 

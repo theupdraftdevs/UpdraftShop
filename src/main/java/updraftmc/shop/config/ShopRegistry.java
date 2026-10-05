@@ -26,24 +26,37 @@ public final class ShopRegistry {
     private final String currencySymbol;
     private final double startingBalance;
     private final boolean sounds;
+    private final TaxSettings tax;
 
     public ShopRegistry(Map<String, ShopCategory> categories,
                         Map<String, Map<String, ShopItem>> items,
                         GuiSettings gui,
                         String currencySymbol,
                         double startingBalance,
-                        boolean sounds) {
+                        boolean sounds,
+                        TaxSettings tax) {
         this.categories = categories;
         this.items = items;
         this.gui = gui;
         this.currencySymbol = currencySymbol;
         this.startingBalance = startingBalance;
         this.sounds = sounds;
+        this.tax = tax;
     }
 
+    /**
+     * @param shopName title of every window
+     * @param mainSize size of the category menu, 27 or 54
+     * @param backItem label of the back button
+     * @param backIcon material of the back button
+     * @param closeItem label of the close button
+     * @param closeIcon material of the close button
+     * @param pageIcons materials for the page arrows, so a server can retint them
+     */
     public record GuiSettings(String shopName, int mainSize,
                               String backItem, String backIcon,
-                              String closeItem, String closeIcon) {
+                              String closeItem, String closeIcon,
+                              String previousIcon, String nextIcon) {
     }
 
     public static ShopRegistry load(FileConfiguration config, Logger logger) {
@@ -75,13 +88,6 @@ public final class ShopRegistry {
 
                 Map<String, ShopItem> loaded = loadItems(section, id, logger);
                 items.put(id, loaded);
-
-                int capacity = capacity(categories.get(id).size());
-
-                if (loaded.size() > capacity) {
-                    logger.warning("Category '" + id + "' has " + loaded.size() + " items but only fits "
-                            + capacity + " in its menu, the rest cannot be clicked. Raise its 'size'.");
-                }
             }
         }
 
@@ -89,9 +95,10 @@ public final class ShopRegistry {
         ConfigurationSection economy = config.getConfigurationSection("economy");
         int mainSize = ShopCategory.validSize(number(gui, "main-size", ShopCategory.DEFAULT_SIZE));
 
-        if (categories.size() > capacity(mainSize)) {
-            logger.warning("The shop has " + categories.size() + " categories but only " + capacity(mainSize)
-                    + " fit in the main menu, the rest cannot be clicked. Raise 'gui.main-size'.");
+        TaxSettings tax = TaxSettings.load(config.getConfigurationSection("tax"));
+
+        if (tax.any()) {
+            logger.info("Tax is enabled (" + tax + ").");
         }
 
         return new ShopRegistry(categories, items,
@@ -101,19 +108,13 @@ public final class ShopRegistry {
                         text(gui, "back-item", "&e&lBack"),
                         materialName(gui, "back-icon", "ARROW"),
                         text(gui, "close-item", "&c&lClose"),
-                        materialName(gui, "close-icon", "BARRIER")),
+                        materialName(gui, "close-icon", "BARRIER"),
+                        materialName(gui, "previous-icon", "ARROW"),
+                        materialName(gui, "next-icon", "ARROW")),
                 text(economy, "currency-symbol", "$"),
                 economy == null ? 0.0 : economy.getDouble("starting-balance", 0.0),
-                gui == null || gui.getBoolean("sounds", true));
-    }
-
-    /**
-     * How many icons a menu of {@code size} can show, matching the layout the views
-     * draw: the rows between the top border and the bottom control row, minus the
-     * border columns.
-     */
-    private static int capacity(int size) {
-        return Math.max(0, (size / 9 - 2) * 7);
+                gui == null || gui.getBoolean("sounds", true),
+                tax);
     }
 
     public List<ShopCategory> categories() {
@@ -157,6 +158,13 @@ public final class ShopRegistry {
      */
     public boolean sounds() {
         return sounds;
+    }
+
+    /**
+     * @return how much the shop takes from each trade, never null
+     */
+    public TaxSettings tax() {
+        return tax;
     }
 
     /**

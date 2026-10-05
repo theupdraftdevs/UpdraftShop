@@ -2,9 +2,13 @@ package updraftmc.shop.gui;
 
 import net.kyori.adventure.text.Component;
 import org.bukkit.Material;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import updraftmc.shop.ShopService;
 import updraftmc.shop.config.Messages;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 
 /**
@@ -46,10 +50,62 @@ final class Style {
     }
 
     /**
+     * Page marker appended to a window title.
+     *
+     * <p>Empty on a single page menu, so a shop that fits everything does not get a
+     * redundant "Page 1" on every window.
+     */
+    static Component pageSuffix(int page, int pages) {
+        if (pages <= 1) {
+            return Component.empty();
+        }
+
+        return Messages.color(" &7» &8Page " + page);
+    }
+
+    /**
+     * Title marker for a search results window.
+     *
+     * @param count how many hits were found, so the result set is self describing
+     */
+    static Component searchSuffix(String query, int count) {
+        return Messages.color(" &7» &8" + upper(query) + " (" + count + ")");
+    }
+
+    /**
      * The border filler. Hypixel keeps it unnamed so it reads as a frame.
      */
     static ItemStack pane() {
         return ItemBuilder.of(BORDER).name(" ").build();
+    }
+
+    /**
+     * The player's own head, showing their balance. Hypixel does the same thing on its
+     * main menus, and it means a player never has to run a separate command to find
+     * out what they can afford.
+     *
+     * <p>The lore doubles as the shortcut list, so the corner of the menu is useful
+     * rather than decorative.
+     */
+    static ItemStack balance(ShopService service, Player player, boolean showCommands) {
+        List<String> lore = new ArrayList<>();
+        lore.add("&7Balance: &e" + service.economy().format(service.economy().getBalance(player)));
+
+        if (showCommands) {
+            lore.add("");
+            lore.add("&7Sell what you hold: &e/sell");
+            lore.add("&7Check your balance: &e/balance");
+        } else {
+            lore.add("");
+            lore.add(Style.CLICK_BROWSE);
+        }
+
+        return ItemBuilder.of(Material.PLAYER_HEAD)
+                .name("&e&lYour Balance")
+                .skullOwner(player)
+                .hideAttributes()
+                .lore(lore.toArray(new String[0]))
+                .build();
     }
 
     /**

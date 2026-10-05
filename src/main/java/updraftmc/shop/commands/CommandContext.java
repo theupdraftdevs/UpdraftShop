@@ -1,5 +1,7 @@
 package updraftmc.shop.commands;
 
+import org.bukkit.Bukkit;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
@@ -63,6 +65,50 @@ public record CommandContext(CommandSender sender,
     }
 
     /**
+     * @return the argument at {@code index}, or {@code fallback} if absent. Unlike
+     *         {@link #arg} this preserves case, for things where case is meaningful.
+     */
+    public String text(int index, String fallback) {
+        return index < args.size() ? args.get(index) : fallback;
+    }
+
+    /**
+     * @return the argument at {@code index} parsed as an int, or {@code fallback}
+     */
+    public int number(int index, int fallback) {
+        if (index >= args.size()) {
+            return fallback;
+        }
+
+        try {
+            return Integer.parseInt(args.get(index));
+        } catch (NumberFormatException exception) {
+            return fallback;
+        }
+    }
+
+    /**
+     * Resolves an online player by name, case insensitively.
+     *
+     * @return the player, or null when nobody online has that name
+     */
+    public Player playerAt(int index) {
+        String name = text(index, "");
+
+        if (name.isEmpty()) {
+            return null;
+        }
+
+        Player exact = Bukkit.getPlayerExact(name);
+
+        if (exact != null) {
+            return exact;
+        }
+
+        return Bukkit.getPlayerExact(name.toLowerCase(Locale.ROOT));
+    }
+
+    /**
      * @return every argument joined with spaces, for echoing usage back
      */
     public String join() {
@@ -83,6 +129,16 @@ public record CommandContext(CommandSender sender,
         }
 
         return matches;
+    }
+
+    /**
+     * Names of everyone currently online, for tab completion.
+     */
+    public static List<String> onlineNames() {
+        return Bukkit.getOnlinePlayers().stream()
+                .map(Player::getName)
+                .sorted(String.CASE_INSENSITIVE_ORDER)
+                .toList();
     }
 
     @NotNull

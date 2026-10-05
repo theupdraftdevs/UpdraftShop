@@ -41,6 +41,12 @@ public final class TradeGUI {
             return;
         }
 
+        if (!service.maySell(player) && !item.buyable()) {
+            // Nothing this player is allowed to do, so do not open a dead end screen.
+            service.messages().send(player, "no-permission");
+            return;
+        }
+
         ShopHolder holder = ShopHolder.trade(categoryId, itemId);
         holder.amount(1);
 
@@ -77,7 +83,7 @@ public final class TradeGUI {
         int amount = Math.min(holder.amount(), limit);
         holder.amount(amount);
 
-        inventory.setItem(PREVIEW_SLOT, preview(service, item, amount));
+        inventory.setItem(PREVIEW_SLOT, preview(service, player, item, amount));
         inventory.setItem(SUMMARY_SLOT, summary(service, player, item, amount));
 
         for (int index = 0; index < AMOUNT_SLOTS.length; index++) {
@@ -85,14 +91,15 @@ public final class TradeGUI {
         }
 
         inventory.setItem(MAX_SLOT, amountButton(limit, amount, false));
+        inventory.setItem(Layout.bottomSlot(SIZE, Layout.HEAD), Style.balance(service, player, false));
         inventory.setItem(BUY_SLOT, buyButton(service, player, item, amount));
         inventory.setItem(SELL_SLOT, sellButton(service, player, item, amount));
 
-        inventory.setItem(Layout.bottomSlot(SIZE, 3), Style.back(
+        inventory.setItem(Layout.bottomSlot(SIZE, Layout.BACK), Style.back(
                 service.icon(service.registry().gui().backIcon()),
                 service.registry().gui().backItem()));
 
-        inventory.setItem(Layout.bottomSlot(SIZE, 5), Style.close(
+        inventory.setItem(Layout.bottomSlot(SIZE, Layout.CLOSE), Style.close(
                 service.icon(service.registry().gui().closeIcon()),
                 service.registry().gui().closeItem()));
     }
@@ -105,11 +112,16 @@ public final class TradeGUI {
         int limit = item.maxStack();
 
         if (item.buyable()) {
-            double affordable = service.economy().getBalance(player) / item.buyPrice();
+            // Divided by the taxed unit cost rather than the headline price, so a tax
+            // does not let the button offer a stack the player cannot actually pay for.
+            // Tax is charged per unit here, which is what the quote shows too.
+            double unit = service.buyCost(item, 1);
+            double affordable = unit <= 0 ? limit : service.economy().getBalance(player) / unit;
+
             limit = Math.min(limit, (int) Math.max(0, Math.min(Math.floor(affordable), Integer.MAX_VALUE)));
         }
 
-        if (item.sellable()) {
+        if (item.sellable() && service.maySell(player)) {
             int held = InventoryUtil.countSellable(player, item.material());
             limit = Math.max(limit, Math.min(item.maxStack(), held));
         }
@@ -117,16 +129,16 @@ public final class TradeGUI {
         return Math.max(1, limit);
     }
 
-    private static ItemStack preview(ShopService service, ShopItem item, int amount) {
+    private static ItemStack preview(ShopService service, Player player, ShopItem item, int amount) {
         List<String> lore = new ArrayList<>();
         lore.add("&7Amount: &f" + amount);
 
         if (item.buyable()) {
-            lore.add(Style.buyLine(service.economy().format(item.buyTotal(amount))));
+            lore.add(Style.buyLine(service.economy().format(service.buyCost(item, amount))));
         }
 
         if (item.sellable()) {
-            lore.add(Style.sellLine(service.economy().format(item.sellTotal(amount))));
+            lore.add(Style.sellLine(service.economy().format(service.sellPayout(item, amount))));
         }
 
         return ItemBuilder.of(item.material())
@@ -142,11 +154,11 @@ public final class TradeGUI {
         lore.add("&7Amount: &f" + amount);
 
         if (item.buyable()) {
-            lore.add("&7Total cost: &a" + service.economy().format(item.buyTotal(amount)));
+            lore.add("&7Total cost: &a" + service.economy().format(service.buyCost(item, amount)));
         }
 
         if (item.sellable()) {
-            lore.add("&7You receive: &a" + service.economy().format(item.sellTotal(amount)));
+            lore.add("&7You receive: &a" + service.economy().format(service.sellPayout(item, amount)));
         }
 
         lore.add("");
@@ -176,20 +188,34 @@ public final class TradeGUI {
                     .build();
         }
 
-        return ItemBuilder.of(Material.LIME_CONCRETE)
-                .name("&a&lBUY &7- &a&l" + service.economy().format(item.buyTotal(amount)))
-                .lore("&7Amount: &f" + amount,
-                        "&7Balance: &e" + service.economy().format(service.economy().getBalance(player)),
-                        "",
-                        Style.CLICK_PURCHASE)
+        double cost = service.buyCost(item, amount);
+        boolean affordable = service.economy().has(player, cost);
+
+        List<String> lore = new ArrayList<>();
+        lore.add("&7Amount: &f" + amount);
+        lore.add("&7Balance: &e" + service.economy().format(service.economy().getBalance(player)));
+
+        if (!affordable) {
+            lore.add("");
+            lore.add("&cYou cannot afford this yet");
+        } else {
+            lore.add("");
+            lore.add(Style.CLICK_PURCHASE);
+        }
+
+        return ItemBuilder.of(affordable ? Material.LIME_CONCRETE : Material.GRAY_CONCRETE)
+                .name("&a&lBUY &7- &a&l" + service.economy().format(cost))
+                .lore(lore.toArray(new String[0]))
                 .build();
     }
 
     private static ItemStack sellButton(ShopService service, Player player, ShopItem item, int amount) {
-        if (!item.sellable()) {
+        if (!item.sellable() || !service.maySell(player)) {
             return ItemBuilder.of(Material.BARRIER)
                     .name("&c&lBuy Only")
-                    .lore("&7This item cannot be sold.")
+                    .lore(item.sellable()
+                            ? "&7You are not allowed to sell items."
+                            : "&7This item cannot be sold.")
                     .build();
         }
 
@@ -208,8 +234,8 @@ public final class TradeGUI {
 
         lore.add("&7Click to &aSell");
 
-        return ItemBuilder.of(sellable > 0 ? Material.RED_CONCRETE : Material.BARRIER)
-                .name("&c&lSELL &7- &a&l" + service.economy().format(item.sellTotal(sellable)))
+        return ItemBuilder.of(sellable > 0 ? Material.RED_CONCRETE : Material.GRAY_CONCRETE)
+                .name("&c&lSELL &7- &a&l" + service.economy().format(service.sellPayout(item, sellable)))
                 .lore(lore.toArray(new String[0]))
                 .build();
     }
@@ -222,13 +248,20 @@ public final class TradeGUI {
             return;
         }
 
-        if (slot == Layout.bottomSlot(SIZE, 3)) {
+        if (slot == Layout.bottomSlot(SIZE, Layout.BACK)) {
+            service.click(player);
             CategoryGUI.open(service, player, holder.categoryId());
             return;
         }
 
-        if (slot == Layout.bottomSlot(SIZE, 5)) {
+        if (slot == Layout.bottomSlot(SIZE, Layout.CLOSE)) {
             player.closeInventory();
+            return;
+        }
+
+        if (slot == Layout.bottomSlot(SIZE, Layout.HEAD)) {
+            service.click(player);
+            render(service, player, holder);
             return;
         }
 

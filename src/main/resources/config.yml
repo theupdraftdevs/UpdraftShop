@@ -18,6 +18,16 @@ gui:
   back-icon: ARROW
   close-item: "&c&lClose"
   close-icon: BARRIER
+  # Page arrows, only drawn when a menu actually has more than one page
+  previous-icon: ARROW
+  next-icon: ARROW
+
+# Tax taken on top of every purchase and out of every sale.
+# Accepts either a fraction (0.05) or a percentage (5), they mean the same thing.
+# Set both to 0 to disable. Tax is rounded per item, never per trade.
+tax:
+  buy: 0.0
+  sell: 0.0
 
 economy:
   # Used only when Vault is not installed. Balances are stored in economy.yml.
@@ -242,9 +252,47 @@ messages:
   empty-hand: "&cHold the item you want to sell first."
   not-in-shop: "&cThe shop does not buy &f{item}&c."
   bad-amount: "&c&f{amount}&c is not a valid amount."
+  no-permission: "&cYou are not allowed to do that."
+  no-search-results: "&cNothing in the shop matches &f{query}&c."
+
+  # /sellall
+  nothing-to-sell-all: "&cYou are not carrying anything the shop will buy."
+  sold-all: "&7Sold &f{amount} &7item(s) across &f{types} &7type(s) for &a{price}"
+
+  # /balance and /pay
+  balance: "&7Your balance is &e{balance}"
+  paid: "&7You sent &f{amount} &7to &a{name}"
+  received: "&7You received &f{amount} &7from &a{name}"
+  pay-self: "&cYou cannot pay yourself."
+  pay-usage: "&e/pay <player> <amount> &7- sends money to somebody else"
+
+  # /shopadmin
+  # /shopstats
+  no-stats: "&f{name}&7 has not traded yet."
+  stats-header: "&8&m                                        "
+  stats-trades: "&7Trades: &f{trades}"
+  stats-bought: "&7Bought: &f{count} &7item(s) for &c{price}"
+  stats-sold: "&7Sold: &f{count} &7item(s) for &a{price}"
+  stats-net: "&7Net: &f{price}"
+
+  unknown-player: "&cNo online player called &f{name}&c."
+  player-offline: "&c&f{name}&c is not online."
+  reload-success: "&aReloaded the shop, &f{entries} &aentries loaded."
+  reload-failed: "&cThe reload failed, the previous config is still in use."
+  admin-help: "&7Try &e/shopadmin reload|give|take|set|open"
+  admin-gave: "&7Gave &f{amount} &7to &a{name}&7, they now have &f{balance}"
+  admin-took: "&7Took &f{amount} &7from &a{name}&7, they now have &f{balance}"
+  admin-set: "&7Set &a{name}&7's balance to &f{amount}"
+  admin-received: "&7An admin gave you &f{amount}&7, you now have &f{balance}"
+  admin-charged: "&7An admin took &f{amount} &7from you, you now have &f{balance}"
+  admin-balance-changed: "&7Your balance is now &f{balance}"
+  admin-opened: "&7Opened the shop for &a{name}"
 
   # /shophelp
   help-header: "&8&m                                        "
-  help-shop: "&e/shop &7- &fopens the shop menu"
-  help-sell: "&e/sell [amount] &7- &fsells the item in your hand"
+  help-shop: "&e/shop [query] &7- &fopens the menu, or searches for an item"
+  help-balance: "&e/balance &7- &fshows your balance"
+  help-pay: "&e/pay <player> <amount> &7- &fsends money to somebody"
+  help-sell: "&e/sell [amount|all] &7- &fsells what you are holding"
+  help-stats: "&e/shopstats &7- &fshows your trading statistics"
   help-help: "&e/shophelp &7- &fshows this list"

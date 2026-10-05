@@ -11,7 +11,9 @@ import org.bukkit.inventory.InventoryHolder;
  * both exact and locale independent.
  *
  * <p>The holder also carries the per-view state a screen needs to remember between
- * clicks, which for the trade view is the currently selected amount.
+ * clicks: which page of a long category is showing, and how much is selected on the
+ * trade screen. Viewers are recreated on every open, so the state never leaks between
+ * two different players or two separate visits to the same menu.
  */
 public final class ShopHolder implements InventoryHolder {
 
@@ -27,6 +29,7 @@ public final class ShopHolder implements InventoryHolder {
 
     private Inventory inventory;
     private int amount = 1;
+    private int page = 1;
 
     private ShopHolder(View view, String categoryId, String itemId) {
         this.view = view;
@@ -38,8 +41,20 @@ public final class ShopHolder implements InventoryHolder {
         return new ShopHolder(View.MAIN, null, null);
     }
 
+    public static ShopHolder main(int page) {
+        ShopHolder holder = main();
+        holder.page(page);
+        return holder;
+    }
+
     public static ShopHolder category(String categoryId) {
         return new ShopHolder(View.CATEGORY, categoryId, null);
+    }
+
+    public static ShopHolder category(String categoryId, int page) {
+        ShopHolder holder = category(categoryId);
+        holder.page(page);
+        return holder;
     }
 
     public static ShopHolder trade(String categoryId, String itemId) {
@@ -71,11 +86,25 @@ public final class ShopHolder implements InventoryHolder {
         return itemId;
     }
 
+    /**
+     * @return how much is selected on the trade screen, never below one
+     */
     public int amount() {
         return amount;
     }
 
     public void amount(int amount) {
         this.amount = Math.max(1, amount);
+    }
+
+    /**
+     * @return the one-based page being shown, never below one
+     */
+    public int page() {
+        return page;
+    }
+
+    public void page(int page) {
+        this.page = Math.max(1, page);
     }
 }

@@ -2,9 +2,11 @@ package updraftmc.shop.gui;
 
 import net.kyori.adventure.text.Component;
 import org.bukkit.Material;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.inventory.meta.SkullMeta;
 import updraftmc.shop.config.Messages;
 
 import java.util.ArrayList;
@@ -52,6 +54,23 @@ public final class ItemBuilder {
 
     public ItemBuilder amount(int amount) {
         stack.setAmount(Math.max(1, Math.min(amount, stack.getMaxStackSize())));
+        return this;
+    }
+
+    /**
+     * Sets the head on a player head, so a menu can show the owner's own face.
+     *
+     * <p>Silently does nothing on any other item, so callers do not have to check the
+     * material first.
+     */
+    public ItemBuilder skullOwner(Player player) {
+        if (!(stack.getItemMeta() instanceof SkullMeta meta)) {
+            return this;
+        }
+
+        meta.setOwningPlayer(player);
+
+        stack.setItemMeta(meta);
         return this;
     }
 

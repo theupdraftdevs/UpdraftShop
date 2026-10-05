@@ -3,10 +3,8 @@ package updraftmc.shop.commands;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
-import org.jetbrains.annotations.NotNull;
 import updraftmc.shop.ShopService;
 import updraftmc.shop.UpdraftShop;
-import updraftmc.shop.model.ShopCategory;
 import updraftmc.shop.model.ShopItem;
 
 import java.util.ArrayList;
@@ -17,12 +15,13 @@ import java.util.Locale;
  * {@code /sell} sells the item the player is holding, without opening a menu.
  *
  * <p>Looks the held material up across every category, so an item works no matter which
- * category lists it. Ties are resolved in config order, which keeps the price stable
- * when the same material is deliberately listed twice at different prices.
+ * category lists it. Ties are resolved towards the better price, so a player is never
+ * quoted less than another listing of the same material offers.
  */
 public final class SellCommand extends CommandFm {
 
     private static final String ALL = "all";
+    private static final String HAND = "hand";
 
     private final ShopService service;
 
@@ -40,6 +39,16 @@ public final class SellCommand extends CommandFm {
             return true;
         }
 
+        if (!service.maySell(player)) {
+            service.messages().send(player, "no-permission");
+            return true;
+        }
+
+        if (ALL.equals(context.arg(0, ""))) {
+            service.sellAll(player);
+            return true;
+        }
+
         ItemStack held = player.getInventory().getItemInMainHand();
 
         if (held.getType() == Material.AIR || held.getAmount() <= 0) {
@@ -54,11 +63,6 @@ public final class SellCommand extends CommandFm {
             return true;
         }
 
-        if (!item.sellable()) {
-            service.messages().send(player, "not-for-sale");
-            return true;
-        }
-
         int amount = amount(context, held.getAmount(), item.maxStack());
 
         if (amount < 0) {
@@ -67,7 +71,6 @@ public final class SellCommand extends CommandFm {
         }
 
         service.sell(player, item, amount);
-
         return true;
     }
 
@@ -77,52 +80,32 @@ public final class SellCommand extends CommandFm {
      * <p>Defaults to the whole held stack, clamped to what the item allows in one
      * trade, so {@code /sell} on a stack of 200 cobble sells the largest legal batch
      * rather than erroring.
+     *
+     * @return the amount, or -1 when the argument was not a number
      */
     private static int amount(CommandContext context, int held, int maxStack) {
-        if (context.isEmpty()) {
-            return Math.min(held, maxStack);
-        }
-
         String raw = context.arg(0, "");
 
-        if (ALL.equals(raw)) {
-            return maxStack;
+        if (raw.isEmpty() || HAND.equals(raw)) {
+            return Math.min(held, maxStack);
         }
 
         try {
             return Integer.parseInt(raw);
-        } catch (NumberFormatException e) {
-            // Not a number: fall through and let the caller report it.
+        } catch (NumberFormatException exception) {
             return -1;
         }
     }
 
     /**
-     * First sellable entry for {@code material} across all categories.
+     * The entry for {@code material} that pays the most, falling back to the cheapest
+     * buyable listing so a buy-only entry still produces the clearer "cannot be sold"
+     * reply instead of "not in the shop".
      */
     private ShopItem find(Material material) {
-        ShopItem fallback = null;
+        ShopItem best = service.bestSellFor(material);
 
-        for (ShopCategory category : service.registry().categories()) {
-            for (ShopItem item : service.registry().items(category.id())) {
-                if (item.material() != material) {
-                    continue;
-                }
-
-                // Prefer something actually sellable, but remember the first match so a
-                // buy-only listing still produces the clearer "cannot be sold" reply
-                // instead of "not in the shop".
-                if (item.sellable()) {
-                    return item;
-                }
-
-                if (fallback == null) {
-                    fallback = item;
-                }
-            }
-        }
-
-        return fallback;
+        return best != null ? best : service.bestBuyFor(material);
     }
 
     @Override
@@ -133,13 +116,10 @@ public final class SellCommand extends CommandFm {
 
         List<String> options = new ArrayList<>();
         options.add(ALL);
+        options.add(HAND);
 
-        for (ShopCategory category : service.registry().categories()) {
-            for (ShopItem item : service.registry().items(category.id())) {
-                if (item.sellable()) {
-                    options.add(item.id());
-                }
-            }
+        for (ShopItem item : service.sellableItems()) {
+            options.add(item.id());
         }
 
         return options;
@@ -148,7 +128,7 @@ public final class SellCommand extends CommandFm {
     /**
      * A readable name for an item that is not in the shop at all.
      */
-    private static String describe(@NotNull ItemStack stack) {
+    private static String describe(ItemStack stack) {
         return stack.getType().name().toLowerCase(Locale.ROOT).replace('_', ' ');
     }
 }
