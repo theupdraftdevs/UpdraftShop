@@ -2,7 +2,7 @@
 # Paper only publishes R0.1-SNAPSHOT builds of its API, so this cannot be a fixed
 # release. The Minecraft version (1.21.11) is what is actually pinned here; bump it
 # with a human, see README "Updating dependencies".
-paperApi = "26.2.build.132-stable"
+paperApi = "26.3.build.194-stable"
 junit = "6.1.3"
 
 [libraries]
